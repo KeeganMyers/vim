@@ -125,6 +125,19 @@ nnoremap z4 :set foldlevel=4<cr>
 nnoremap z5 :set foldlevel=5<cr>
 " }}}
 
+" tab navigation like firefox {{{
+nnoremap th  :tabfirst<CR>
+nnoremap tj  :tabnext<CR>
+nnoremap tk  :tabprev<CR>
+nnoremap tl  :tablast<CR>
+nnoremap tt  :tabedit<Space>
+nnoremap tn  :tabnext<Space>
+nnoremap tm  :tabm<Space>
+nnoremap td  :tabclose<CR>
+nnoremap <C-t>     :tabnew<CR>
+ inoremap <C-t>     <Esc>:tabnew<CR>
+" }}}
+
 "Git extension {{{
 autocmd QuickFixCmdPost *grep* cwindow
 "}}}
