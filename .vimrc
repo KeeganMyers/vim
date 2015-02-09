@@ -87,7 +87,7 @@ set noerrorbells
 set nobackup
 set nrformats=
 set shortmess+=I
-set clipboard=unnamed
+set clipboard=unnamedplus
 set autoread
 nnoremap <C-e> 2<C-e>
 nnoremap <C-y> 2<C-y>
