@@ -51,6 +51,12 @@ endif
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
+if has("autocmd")
+  autocmd FileType ruby set omnifunc=rubycomplete#Complete
+  autocmd FileType ruby let g:rubycomplete_buffer_loading=1
+  autocmd FileType ruby let g:rubycomplete_classes_in_global=1
+endif
+
 call pathogen#helptags()
 call pathogen#infect()
 let mapleader=","
@@ -60,6 +66,8 @@ set hidden
 set nowrap
 set tabstop=2
 set backspace=indent,eol,start
+set smartindent
+set expandtab
 set autoindent
 set copyindent
 set noswapfile
@@ -221,13 +229,12 @@ filetype plugin indent on
 set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.
 set pastetoggle=<F2>
-set mouse=a
 nnoremap ; :
 vmap Q gp
 nmap Q gqap
-map <C-left> <C-w>h
-map <C-down> <C-w>j
-map <C-up> <C-w>k
-map <C-right> <C-w>l
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
 map <silent> ,/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
