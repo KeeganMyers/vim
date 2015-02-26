@@ -51,9 +51,11 @@ endif
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
+set omnifunc=syntaxcomplete#Complete
 if has("autocmd")
-  autocmd FileType ruby set omnifunc=rubycomplete#Complete
-  autocmd FileType ruby let g:rubycomplete_buffer_loading=1
+  autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
+  autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
+  autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
   autocmd FileType ruby let g:rubycomplete_classes_in_global=1
 endif
 
@@ -187,7 +189,7 @@ nnoremap <leader>ft Vatzf
 nnoremap <leader>n :NERDTreeFocus<CR>
 nnoremap <leader>m :NERDTreeClose<CR>:NERDTreeFind<CR>
 nnoremap <leader>N :NERDTreeClose<CR>
-map <C-x> :NERDTreeToggle<CR>
+map <C-c> :NERDTreeToggle<CR>
 
 " Store the bookmarks file
 let NERDTreeBookmarksFile=expand("$HOME/.vim/NERDTreeBookmarks")
