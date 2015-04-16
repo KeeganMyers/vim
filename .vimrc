@@ -105,8 +105,10 @@ nnoremap <C-y> 2<C-y>
 " Folding rules {{{
 set foldenable                  " enable folding
 set foldcolumn=2                " add a fold column
-set foldmethod=marker           " detect triple-{ style fold markers
+set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
+let javaScript_fold=1         " JavaScript
+let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
                                 " which commands trigger auto-unfold
 function! MyFoldText()
@@ -133,6 +135,10 @@ nnoremap z2 :set foldlevel=2<cr>
 nnoremap z3 :set foldlevel=3<cr>
 nnoremap z4 :set foldlevel=4<cr>
 nnoremap z5 :set foldlevel=5<cr>
+inoremap qf <C-O>za
+nnoremap :f za
+onoremap :f <C-C>za
+vnoremap :f zf
 " }}}
 
 " tab navigation like firefox {{{
