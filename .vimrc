@@ -1,25 +1,17 @@
 runtime! debian.vim
 
-if has("syntax")
-  syntax on
-endif
-
+filetype off
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
 set omnifunc=syntaxcomplete#Complete
 
-let g:slime_target = "tmux"
-
-if has("autocmd")
-  autocmd Syntax clojure RainbowParenthesesLoadRound
-  autocmd BufEnter *.clj RainbowParenthesesToggle
-  autocmd BufLeave *.clj RainbowParenthesesToggle
-  autocmd QuickFixCmdPost *grep* cwindow
-endif
-
 call pathogen#helptags()
 call pathogen#infect()
+
+filetype plugin indent on
+syntax on
+
 let mapleader=","
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
@@ -67,7 +59,8 @@ set foldcolumn=2                " add a fold column
 set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
 let javascript_fold=1         " JavaScript
-let g:clojure_folds = "def,ns,let"
+let g:clojure_folds = "def,ns,let,macro"
+let clojure_fold=1
 let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
                                 " which commands trigger auto-unfold
@@ -117,12 +110,13 @@ nnoremap <C-t>     :tabnew<CR>
 " Toggle the foldcolumn {{{
 nnoremap <leader>f :call FoldColumnToggle()<cr>
 
-let g:last_fold_column_width = 4  " Pick a sane default for the foldcolumn
+let g:last_fold_column_width = 4
 
 function! FoldColumnToggle()
     if &foldcolumn
         let g:last_fold_column_width = &foldcolumn
         setlocal foldcolumn=0
+      syntax on
     else
         let &l:foldcolumn = g:last_fold_column_width
     endif
@@ -154,28 +148,27 @@ let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,
 let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
 let g:clojure_align_multiline_strings = 1
 let g:clojure_align_subforms = 1
-let g:rbpt_colorpairs = [
-    \ ['brown',       'RoyalBlue3'],
-    \ ['Darkblue',    'SeaGreen3'],
-    \ ['darkgray',    'DarkOrchid3'],
-    \ ['darkgreen',   'firebrick3'],
-    \ ['darkcyan',    'RoyalBlue3'],
-    \ ['darkred',     'SeaGreen3'],
-    \ ['darkmagenta', 'DarkOrchid3'],
-    \ ['brown',       'firebrick3'],
-    \ ['gray',        'RoyalBlue3'],
-    \ ['black',       'SeaGreen3'],
-    \ ['darkmagenta', 'DarkOrchid3'],
-    \ ['Darkblue',    'firebrick3'],
-    \ ['darkgreen',   'RoyalBlue3'],
-    \ ['darkcyan',    'SeaGreen3'],
-    \ ['darkred',     'DarkOrchid3'],
-    \ ['red',         'firebrick3'],
-    \ ]
-let g:rbpt_max = 16
-let g:rbpt_loadcmd_toggle = 0
+let vimclojure#HighlightBuiltins=1
+let vimclojure#HighlightContrib=1
+let vimclojure#DynamicHighlighting=1
+let vimclojure#WantNailgun = 1
+let vimclojure#NailgunClient = "/home/kmyers/Projects/clojure/arc/ng"
+function! Config_Rainbow()
+    call rainbow_parentheses#load(0)
+    call rainbow_parentheses#load(1)
+    call rainbow_parentheses#load(2)
+endfunction
 
-nnoremap <leader>ft Vatzf
+function! Load_Rainbow()
+    call rainbow_parentheses#active()
+endfunction
+
+augroup TastetheRainbow
+    autocmd!
+    autocmd Syntax * call Config_Rainbow()
+    autocmd VimEnter,BufRead,BufWinEnter,BufNewFile * call Load_Rainbow()
+augroup END
+
 
 function! DeleteFile(...)
   if(exists('a:1'))
@@ -203,33 +196,20 @@ endfunction
 com! Rm call DeleteFile()
 "delete the file and quit the buffer (quits vim if this was the last file)
 com! RM call DeleteFile() <Bar> q!
+
 " NERDTree settings {{{
 nnoremap <leader>n :NERDTreeFocus<CR>
 nnoremap <leader>m :NERDTreeClose<CR>:NERDTreeFind<CR>
 nnoremap <leader>N :NERDTreeClose<CR>
 map <C-n> :NERDTreeToggle<CR>
 
-" Store the bookmarks file
 let NERDTreeBookmarksFile=expand("$HOME/.vim/NERDTreeBookmarks")
-
-" Show the bookmarks table on startup
 let NERDTreeShowBookmarks=1
-
-" Show hidden files, too
 let NERDTreeShowFiles=1
 let NERDTreeShowHidden=1
-
-" Quit on opening files from the tree
 let NERDTreeQuitOnOpen=1
-
-" Highlight the selected entry in the tree
 let NERDTreeHighlightCursorline=1
-
-" Use a single click to fold/unfold directories and a double click to open
-" files
 let NERDTreeMouseMode=2
-
-" Don't display these kinds of files
 let NERDTreeIgnore=[ '\.pyc$', '\.pyo$', '\.py\$class$', '\.obj$',
             \ '\.o$', '\.so$', '\.egg$', '^\.git$' ]
 
@@ -245,7 +225,6 @@ set laststatus=2                " tell VIM to always put a status line in, even
 set cmdheight=2                 " use a status bar that is 2 rows high
 " }}}
 
-filetype plugin indent on
 set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.
 set pastetoggle=<F2>
