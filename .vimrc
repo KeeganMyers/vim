@@ -160,7 +160,7 @@ function! Config_Rainbow()
 endfunction
 
 function! Load_Rainbow()
-    call rainbow_parentheses#active()
+    call rainbow_parentheses#activate()
 endfunction
 
 augroup TastetheRainbow
