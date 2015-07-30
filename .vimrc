@@ -126,12 +126,7 @@ endfunction
 " Highlighting {{{
 if &t_Co > 2 || has("gui_running")
    syntax on                    " switch syntax highlighting on, when the terminal has colors
-endif
-" }}}
-
-" Highlighting {{{
-if &t_Co > 2 || has("gui_running")
-   syntax on                    " switch syntax highlighting on, when the terminal has colors
+au BufNewFile,BufRead *.cljc set filetype=clojure
 endif
 " }}}
 
