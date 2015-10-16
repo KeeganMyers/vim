@@ -59,7 +59,7 @@ set foldcolumn=2                " add a fold column
 set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
 let javascript_fold=1         " JavaScript
-let g:clojure_folds = "def,ns,let,macro"
+let g:clojure_folds = "defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def"
 let clojure_fold=1
 let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
@@ -127,6 +127,7 @@ endfunction
 if &t_Co > 2 || has("gui_running")
    syntax on                    " switch syntax highlighting on, when the terminal has colors
 au BufNewFile,BufRead *.cljc set filetype=clojure
+au BufNewFile,BufRead *.cljx set filetype=clojure
 endif
 " }}}
 
@@ -146,8 +147,8 @@ let g:clojure_align_subforms = 1
 let vimclojure#HighlightBuiltins=1
 let vimclojure#HighlightContrib=1
 let vimclojure#DynamicHighlighting=1
-let vimclojure#WantNailgun = 1
-let vimclojure#NailgunClient = "/home/kmyers/Projects/clojure/arc/ng"
+"let vimclojure#WantNailgun = 1
+"let vimclojure#NailgunClient = "/home/kmyers/Projects/clojure/arc/ng"
 function! Config_Rainbow()
     call rainbow_parentheses#load(0)
     call rainbow_parentheses#load(1)
