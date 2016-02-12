@@ -22,6 +22,9 @@ set backspace=indent,eol,start
 set smartindent
 set expandtab
 set autoindent
+set formatoptions+=t
+set textwidth=79
+set tw=79
 set copyindent
 set noswapfile
 set number
@@ -59,7 +62,7 @@ set foldcolumn=2                " add a fold column
 set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
 let javascript_fold=1         " JavaScript
-let g:clojure_folds = "defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def"
+let g:clojure_folds = "defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def,[,{,("
 let clojure_fold=1
 let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
@@ -107,8 +110,27 @@ nnoremap <C-t>     :tabnew<CR>
  inoremap <C-t>     <Esc>:tabnew<CR>
 " }}}
 
+
+" tmux config {{{
+let g:tmux_navigator_no_mappings = 1
+let g:tmux_navigator_save_on_switch = 0
+
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
+
+nnoremap <silent> <C-h> :TmuxNavigateLeft<cr>
+nnoremap <silent> <C-j> :TmuxNavigateDown<cr>
+nnoremap <silent> <C-k> :TmuxNavigateUp<cr>
+nnoremap <silent> <C-l> :TmuxNavigateRight<cr>
+nnoremap <silent> <C-p> :TmuxNavigatePrevious<cr>
+" }}}
+
 " Toggle the foldcolumn {{{
 nnoremap <leader>f :call FoldColumnToggle()<cr>
+
+
 
 let g:last_fold_column_width = 4
 
@@ -127,7 +149,9 @@ endfunction
 if &t_Co > 2 || has("gui_running")
    syntax on                    " switch syntax highlighting on, when the terminal has colors
 au BufNewFile,BufRead *.cljc set filetype=clojure
+au BufNewFile,BufRead *.boot set filetype=clojure
 au BufNewFile,BufRead *.cljx set filetype=clojure
+au BufNewFile,BufRead *.less set filetype=css
 endif
 " }}}
 
@@ -147,8 +171,6 @@ let g:clojure_align_subforms = 1
 let vimclojure#HighlightBuiltins=1
 let vimclojure#HighlightContrib=1
 let vimclojure#DynamicHighlighting=1
-"let vimclojure#WantNailgun = 1
-"let vimclojure#NailgunClient = "/home/kmyers/Projects/clojure/arc/ng"
 function! Config_Rainbow()
     call rainbow_parentheses#load(0)
     call rainbow_parentheses#load(1)
@@ -227,9 +249,5 @@ set pastetoggle=<F2>
 nnoremap ; :
 vmap Q gp
 nmap Q gqap
-map <C-h> <C-w>h
-map <C-j> <C-w>j
-map <C-k> <C-w>k
-map <C-l> <C-w>l
 map <silent> ,/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
