@@ -9,8 +9,8 @@ set omnifunc=syntaxcomplete#Complete
 call pathogen#helptags()
 call pathogen#infect()
 
-filetype plugin indent on
 syntax on
+filetype plugin indent on
 
 let mapleader=","
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
@@ -20,15 +20,17 @@ set nowrap
 set tabstop=2
 set backspace=indent,eol,start
 set smartindent
+set cindent
 set expandtab
 set autoindent
 set formatoptions+=t
 set textwidth=79
 set tw=79
-set copyindent
 set noswapfile
 set number
+set copyindent
 set shiftwidth=2
+set softtabstop=2
 set shiftround
 set showmatch
 set ignorecase
@@ -49,7 +51,6 @@ set showcmd
 set cursorline
 set noerrorbells
 set nobackup
-set nrformats=
 set shortmess+=I
 set clipboard=unnamedplus
 set autoread
@@ -151,6 +152,7 @@ if &t_Co > 2 || has("gui_running")
 au BufNewFile,BufRead *.cljc set filetype=clojure
 au BufNewFile,BufRead *.boot set filetype=clojure
 au BufNewFile,BufRead *.cljx set filetype=clojure
+au BufNewFile,BufRead *.cljs set filetype=clojure
 au BufNewFile,BufRead *.less set filetype=css
 endif
 " }}}
@@ -168,9 +170,10 @@ let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,
 let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
 let g:clojure_align_multiline_strings = 1
 let g:clojure_align_subforms = 1
-let vimclojure#HighlightBuiltins=1
-let vimclojure#HighlightContrib=1
-let vimclojure#DynamicHighlighting=1
+"let vimclojure#HighlightBuiltins=1
+"let vimclojure#FuzzyIndent=1
+"let vimclojure#HighlightContrib=1
+"let vimclojure#DynamicHighlighting=1
 function! Config_Rainbow()
     call rainbow_parentheses#load(0)
     call rainbow_parentheses#load(1)
