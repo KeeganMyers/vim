@@ -85,6 +85,13 @@ function! MyFoldText()
 endfunction
 set foldtext=MyFoldText()
 
+if executable('ag')
+  set grepprg=ag\ --nogroup\ --nocolor
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+  nnoremap K :grep! "\b<C-R><C-W>\b"<CR>:cw<CR>
+  let g:ctrlp_use_caching = 0
+endif
+
 " Mappings to easily toggle fold levels
 nnoremap z0 :set foldlevel=0<cr>
 nnoremap z1 :set foldlevel=1<cr>
