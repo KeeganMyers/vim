@@ -16,8 +16,8 @@ let mapleader=","
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 set hidden
-set nowrap
 set tabstop=2
+set nowrap
 set backspace=indent,eol,start
 set smartindent
 set cindent
@@ -113,9 +113,7 @@ nnoremap tl  :tablast<CR>
 nnoremap tt  :tabedit<Space>
 nnoremap tn  :tabnext<Space>
 nnoremap tm  :tabm<Space>
-nnoremap td  :gabclose<CR>
-nnoremap <C-t>     :tabnew<CR>
- inoremap <C-t>     <Esc>:tabnew<CR>
+nnoremap td  :tabclose<CR>
 " }}}
 
 
@@ -127,6 +125,8 @@ map <C-h> <C-w>h
 map <C-j> <C-w>j
 map <C-k> <C-w>k
 map <C-l> <C-w>l
+map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
+map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 
 nnoremap <silent> <C-h> :TmuxNavigateLeft<cr>
 nnoremap <silent> <C-j> :TmuxNavigateDown<cr>
@@ -200,6 +200,17 @@ if exists("+showtabline")
     highlight link TabNum Special
 endif
 
+nnoremap 1 :tabn 1<Return>
+nnoremap 2 :tabn 2<Return>
+nnoremap 3 :tabn 3<Return>
+nnoremap 4 :tabn 4<Return>
+nnoremap 5 :tabn 5<Return>
+nnoremap 6 :tabn 6<Return>
+nnoremap 7 :tabn 7<Return>
+nnoremap 8 :tabn 8<Return>
+nnoremap 9 :tabn 9<Return>
+nnoremap > :20winc ><Return>
+nnoremap < :20winc <<Return>
 " Add line without entering insert
 nmap <S-Enter> O<Esc>
 nmap <CR> o<Esc>
@@ -275,6 +286,14 @@ endfunction
 com! Rm call DeleteFile()
 "delete the file and quit the buffer (quits vim if this was the last file)
 com! RM call DeleteFile() <Bar> q!
+
+function! CopyOutput()
+redir @">
+ silent execute Last!
+redir END
+endfunction
+
+com! CL call CopyOutput()
 
 " NERDTree settings {{{
 nnoremap <leader>n :NERDTreeFocus<CR>
