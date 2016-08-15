@@ -211,6 +211,8 @@ nnoremap 8 :tabn 8<Return>
 nnoremap 9 :tabn 9<Return>
 nnoremap > :20winc ><Return>
 nnoremap < :20winc <<Return>
+nnoremap _ :20winc -<Return>
+nnoremap + :20winc +<Return>
 " Add line without entering insert
 nmap <S-Enter> O<Esc>
 nmap <CR> o<Esc>
@@ -312,7 +314,10 @@ let NERDTreeIgnore=[ '\.pyc$', '\.pyo$', '\.py\$class$', '\.obj$',
             \ '\.o$', '\.so$', '\.egg$', '^\.git$' ]
 
 " }}}
-
+"
+command! -range Vis call setpos('.', [0,<line1>,0,0]) |
+                    \ exe "normal V" |
+                    \ call setpos('.', [0,<line2>,0,0])
 
 " Editor layout {{{
 set termencoding=utf-8
