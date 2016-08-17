@@ -1,7 +1,6 @@
 # Set up the prompt
 
 export PATH=usr/bin:$PATH
-export PATH="$HOME/.rvm/bin:$PATH" # Add RVM to PATH for scripting
 #export ZSH_THEME="muse"
 export ZSH_THEME="simple"
 plugins=(git colored-man-pages docker command-not-found  debian git-extras git-hubflow themes tmux vi-mode debian)
@@ -56,9 +55,6 @@ if [ -x /usr/bin/dircolors ]; then
     alias ls='ls --color=auto'
     alias mate-terminal='mate-terminal -e tmux'
     alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
-    alias addCtags="ctags -R --exclude=node_modules --exclude=dev-resources --exclude=.cljs_rhino_repl --exclude=log --exclude=out --exclude=resources --exclude=search --exclude=data --exclude=target ."
-    alias mirror='xrandr --output VGA-1 --auto --output DVI-I-1 --auto --same-as VGA-1'
-    alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
     alias grep='grep  --color=auto'
     alias fgrep='fgrep --color=auto'
     alias update_master='git remote update'
@@ -72,7 +68,6 @@ if [ -x /usr/bin/dircolors ]; then
     alias start_redis='sudo /etc/init.d/redis-server start'
     alias stop_redis='sudo /etc/init.d/redis-server stop'
     alias recompile_assets='RAILS_ENV=staging bundle exec rake assets:precompile'
-    alias ag='ag --path-to-agignore=~/.agignore'
     alias rake='bundle exec rake -X'
     alias clip='xclip -selection c'
     alias updateReports='arc_current;bundle exec rake db:migrate:redo VERSION=20141003182022'
@@ -83,20 +78,23 @@ if [ -x /usr/bin/dircolors ]; then
     alias cleanUpAssets='arcCurrent; rm public/assets/*.js; rm public/assets/*.css; rm public/assets/*.js.*; rm public/assets/*.css.*;rm public/assets/manifest-*'
     alias winName='xprop'
     alias clojureBash='docker exec -it clojure bash'
+    alias rethinkBash='docker exec -it rethinkdb bash'
+    alias kanboardSetup='docker run -d --name kanboard -p 1070:80 -v /home/kmyers/kanboard:/var/www/html/data -t kanboard/kanboard:master'
+    alias kanboardTakeDown='docker stop kanboard; docker rm kanboard'
     alias clojureSetup='rethinkSetup; docker run -d -p 4000:3448 -P --link rethinkdb:rdb -it --name clojure -v /home/kmyers/Projects/clojure:/home/projects -v /home/kmyers/.vim:/home/.vim clojure'
     alias clojureTakeDown='docker stop clojure; docker rm clojure'
     alias rethinkSetup='docker run -d -p 1090:8080 -p 28015:28015 -v /home/kmyers/Projects/clojure/arc/data:/data --name rethinkdb  rethinkdb'
     alias rethinkTakeDown='docker stop rethinkdb; docker rm rethinkdb'
-    alias rabbitSetup='arcClojure; docker run -d -p 15672:15672 -p 15674:15674 -p 5672:5672 --name rabbitmq rabbitmqv3.6'
+    alias rabbitSetup='arcClojure; docker run -d -p 15672:15672  -p 5672:5672 --name rabbitmq rabbitmqv3.6'
     alias rabbitBash='docker exec -it rabbitmq bash'
     alias rabbitTakeDown='docker stop rabbitmq; docker rm rabbitmq'
-    alias searchSetup='docker run -d -p 9200:9200 -p 9300:9300 -v /home/kmyers/Projects/clojure/arc/search:/usr/share/elasticsearch/data --name elasticsearch elasticsearch:2.3.1 -Des.node.name="Node01" -Des.cluster.name="elasticsearch"'
+    alias searchSetup='docker run -d -p 9200:9200 -p 9300:9300 --name elasticsearch elasticsearch:latest -Des.node.name="Node01" -Des.cluster.name="elasticsearch"'
     alias searchBash='docker exec -it elasticsearch bash'
     alias searchTakeDown='docker stop elasticsearch; docker rm elasticsearch'
     alias dockerMailcatcher='mailcatcher --smtp-ip 192.168.2.69 &'
-    alias dark='xrandr --output DVI-I-1 --brightness 0.5;xrandr --output VGA-1 --brightness 0.5'
-    alias average='xrandr --output DVI-I-1 --brightness 0.8;xrandr --output VGA-1 --brightness 0.8'
-    alias bright='xrandr --output DVI-I-1 --brightness 1;xrandr --output VGA-1 --brightness 1'
+    alias dark='xrandr --output DP-4 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-3 --brightness 0.6'
+    alias average='xrandr --output DP-4 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-3 --brightness 0.8'
+    alias bright='xrandr --output DP-4 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-3 --brightness 1.0'
 fi
 
 alias ll='ls -alF'
@@ -105,10 +103,6 @@ alias l='ls -CF'
 alias arcCurrent='cd /home/kmyers/Projects/ARC'
 alias arcClojure='cd /home/kmyers/Projects/clojure/arc'
 
-alias cya='sudo cat /var/log/mail.log | grep "to=<"'
-clear_cache(){
-  sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
-}
 
 instanceIP(){
   docker inspect $1 | grep '"IPAddress":' | awk {'print $2'} | tr "," " " | tr "\"" " "
@@ -122,4 +116,4 @@ export BOOT_EMIT_TARGET=no
 export DOCKER_HOST=unix:///var/run/docker.sock
 export BOOT_JVM_OPTIONS='-Xmx4g -client -XX:+TieredCompilation
 -XX:TieredStopAtLevel=1 -Xverify:none -XX:+UseConcMarkSweepGC
--XX:+CMSClassUnloadingEnabled -Xmx512m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
+-XX:+CMSClassUnloadingEnabled -Xmx512m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=43210'
