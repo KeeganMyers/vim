@@ -327,6 +327,10 @@ set laststatus=2                " tell VIM to always put a status line in, even
                                 "    if there is only one window
 set cmdheight=2                 " use a status bar that is 2 rows high
 " }}}
+"
+python from powerline.vim import setup as powerline_setup
+python powerline_setup()
+python del powerline_setup
 
 set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.

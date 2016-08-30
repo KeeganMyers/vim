@@ -8,6 +8,7 @@ plugins=(git colored-man-pages docker command-not-found  debian git-extras git-h
 ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 setopt histignorealldups sharehistory
+. /usr/local/lib/python2.7/dist-packages/powerline/bindings/zsh/powerline.zsh
 
 # on login
 if [ ! -f /tmp/login ]; then
