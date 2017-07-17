@@ -63,7 +63,7 @@ set foldcolumn=2                " add a fold column
 set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
 let javascript_fold=1         " JavaScript
-let g:clojure_folds = "defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def,[,{,("
+let g:clojure_folds="defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def,[,{,("
 let clojure_fold=1
 let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
@@ -221,6 +221,7 @@ nmap <CR> o<Esc>
 if &t_Co > 2 || has("gui_running")
    syntax on                    " switch syntax highlighting on, when the terminal has colors
 au BufNewFile,BufRead *.cljc set filetype=clojure
+au BufNewFile,BufRead *.clj set filetype=clojure
 au BufNewFile,BufRead *.boot set filetype=clojure
 au BufNewFile,BufRead *.cljx set filetype=clojure
 au BufNewFile,BufRead *.cljs set filetype=clojure
@@ -328,10 +329,6 @@ set laststatus=2                " tell VIM to always put a status line in, even
 set cmdheight=2                 " use a status bar that is 2 rows high
 " }}}
 "
-python from powerline.vim import setup as powerline_setup
-python powerline_setup()
-python del powerline_setup
-
 set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.
 set pastetoggle=<F2>

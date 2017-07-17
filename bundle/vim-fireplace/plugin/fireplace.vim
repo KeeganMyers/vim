@@ -270,6 +270,7 @@ let s:piggieback = copy(s:repl)
 function! s:repl.piggieback(arg, ...) abort
   if a:0 && a:1
     if len(self.piggiebacks)
+      let result = fireplace#session_eval(':cljs/quit', {})
       call remove(self.piggiebacks, 0)
     endif
     return {}
@@ -289,7 +290,8 @@ function! s:repl.piggieback(arg, ...) abort
   else
     let arg = a:arg
   endif
-  let response = connection.eval('(cemerick.piggieback/cljs-repl'.' '.arg.')')
+
+ let response = connection.eval('(cemerick.piggieback/cljs-repl'.arg.')')
 
   if empty(get(response, 'ex'))
     call insert(self.piggiebacks, extend({'connection': connection}, deepcopy(s:piggieback)))
@@ -1064,7 +1066,12 @@ function! s:Eval(bang, line1, line2, count, args) abort
       return ''
     endif
     let options.file_path = s:buffer_path()
-    let expr = repeat("\n", line1-1).repeat(" ", col1-1)
+    if expand('%:e') ==# 'cljs'
+      "leading line feed don't work on cljs repl
+      let expr = ''
+    else
+      let expr = repeat("\n", line1-1).repeat(" ", col1-1)
+    endif
     if line1 == line2
       let expr .= getline(line1)[col1-1 : col2-1]
     else
@@ -1270,7 +1277,7 @@ function! s:Require(bang, echo, ns) abort
   if expand('%:e') ==# 'cljs'
     let cmd = '(load-file '.s:str(tr(a:ns ==# '' ? fireplace#ns() : a:ns, '-.', '_/').'.cljs').')'
   else
-    let cmd = ('(require '.s:qsym(a:ns ==# '' ? fireplace#ns() : a:ns).' :reload'.(a:bang ? '-all' : '').')')
+    let cmd = ('(clojure.core/require '.s:qsym(a:ns ==# '' ? fireplace#ns() : a:ns).' :reload'.(a:bang ? '-all' : '').')')
   endif
   if a:echo
     echo cmd
@@ -1302,19 +1309,40 @@ function! fireplace#info(symbol) abort
     let response = fireplace#message({'op': 'info', 'symbol': a:symbol})[0]
     if type(get(response, 'value')) == type({})
       return response.value
-    elseif has_key(response, 'file')
+    elseif has_key(response, 'file') || has_key(response, 'doc')
       return response
     endif
   endif
+
+  let sym = s:qsym(a:symbol)
   let cmd =
-        \ '(if-let [m (meta (resolve ' . s:qsym(a:symbol) .'))]'
-        \ . ' {:name (:name m)'
-        \ .  ' :ns (:ns m)'
-        \ .  ' :resource (:file m)'
-        \ .  ' :line (:line m)'
-        \ .  ' :doc (:doc m)'
-        \ .  ' :arglists-str (str (:arglists m))}'
-        \ . ' {})'
+        \ '(cond'
+        \ . '(not (symbol? ' . sym . '))'
+        \ . '{}'
+        \ . '(special-symbol? ' . sym . ')'
+        \ . "(if-let [m (#'clojure.repl/special-doc " . sym . ")]"
+        \ .   ' {:name (:name m)'
+        \ .    ' :special-form "true"'
+        \ .    ' :doc (:doc m)'
+        \ .    ' :url (:url m)'
+        \ .    ' :forms-str (str "  " (:forms m))}'
+        \ .   ' {})'
+        \ . '(find-ns ' . sym . ')'
+        \ . "(if-let [m (#'clojure.repl/namespace-doc (find-ns " . sym . "))]"
+        \ .   ' {:ns (:name m)'
+        \ .   '  :doc (:doc m)}'
+        \ .   ' {})'
+        \ . ':else'
+        \ . '(if-let [m (meta (resolve ' . sym .'))]'
+        \ .   ' {:name (:name m)'
+        \ .    ' :ns (:ns m)'
+        \ .    ' :macro (when (:macro m) true)'
+        \ .    ' :resource (:file m)'
+        \ .    ' :line (:line m)'
+        \ .    ' :doc (:doc m)'
+        \ .    ' :arglists-str (str (:arglists m))}'
+        \ .   ' {})'
+        \ . ' )'
   return fireplace#evalparse(cmd)
 endfunction
 
@@ -1324,7 +1352,7 @@ function! fireplace#source(symbol) abort
   let file = ''
   if !empty(get(info, 'resource'))
     let file = fireplace#findresource(info.resource)
-  else
+  elseif has_key(info, 'file')
     let fpath = ''
     if get(info, 'file') =~# '^/\|^\w:\\'
       let file = info.file
@@ -1337,7 +1365,7 @@ function! fireplace#source(symbol) abort
     end
   endif
 
-  if !empty(file) && !empty(get(info, 'line'))
+  if !empty(file) && !empty(get(info, 'line', ''))
     return '+' . info.line . ' ' . fnameescape(file)
   endif
   return ''
@@ -1604,13 +1632,39 @@ function! s:Doc(symbol) abort
   let info = fireplace#info(a:symbol)
   if has_key(info, 'ns') && has_key(info, 'name')
     echo info.ns . '/' . info.name
+  elseif has_key(info, 'ns')
+    echo info.ns
+  elseif has_key(info, 'name')
+    echo info.name
   endif
+
+  if get(info, 'forms-str', 'nil') !=# 'nil'
+    echo info['forms-str']
+  endif
+
   if get(info, 'arglists-str', 'nil') !=# 'nil'
     echo info['arglists-str']
   endif
+
+  if get(info, 'special-form', 'nil') !=# 'nil'
+    echo "Special Form"
+
+    if has_key(info, 'url')
+      if !empty(get(info, 'url', ''))
+        echo '  Please see http://clojure.org/' . info.url
+      else
+        echo '  Please see http://clojure.org/special_forms#' . info.name
+      endif
+    endif
+
+  elseif get(info, 'macro', 'nil') !=# 'nil'
+    echo "Macro"
+  endif
+
   if !empty(get(info, 'doc', ''))
     echo '  ' . info.doc
   endif
+
   return ''
 endfunction
 
@@ -1651,23 +1705,24 @@ augroup END
 
 function! fireplace#capture_test_run(expr, ...) abort
   let expr = '(try'
-        \ . ' (require ''clojure.test)'
-        \ . ' (binding [clojure.test/report (fn [m]'
-        \ .  ' (case (:type m)'
+        \ . ' ' . (a:0 ? a:1 : '')
+        \ . ' (clojure.core/require ''clojure.test)'
+        \ . ' (clojure.core/binding [clojure.test/report (fn [m]'
+        \ .  ' (clojure.core/case (:type m)'
         \ .    ' (:fail :error)'
-        \ .    ' (let [{file :file line :line test :name} (meta (last clojure.test/*testing-vars*))]'
+        \ .    ' (clojure.core/let [{file :file line :line test :name} (clojure.core/meta (clojure.core/last clojure.test/*testing-vars*))]'
         \ .      ' (clojure.test/with-test-out'
         \ .        ' (clojure.test/inc-report-counter (:type m))'
-        \ .        ' (println (clojure.string/join "\t" [file line (name (:type m)) test]))'
-        \ .        ' (when (seq clojure.test/*testing-contexts*) (println (clojure.test/testing-contexts-str)))'
-        \ .        ' (when-let [message (:message m)] (println message))'
-        \ .        ' (println "expected:" (pr-str (:expected m)))'
-        \ .        ' (println "  actual:" (pr-str (:actual m)))))'
+        \ .        ' (clojure.core/println (clojure.string/join "\t" [file line (clojure.core/name (:type m)) test]))'
+        \ .        ' (clojure.core/when (clojure.core/seq clojure.test/*testing-contexts*) (clojure.core/println (clojure.test/testing-contexts-str)))'
+        \ .        ' (clojure.core/when-let [message (:message m)] (clojure.core/println message))'
+        \ .        ' (clojure.core/println "expected:" (clojure.core/pr-str (:expected m)))'
+        \ .        ' (clojure.core/println "  actual:" (clojure.core/pr-str (:actual m)))))'
         \ .    ' ((.getRawRoot #''clojure.test/report) m)))]'
-        \ . ' ' . (a:0 ? a:1 : '') . a:expr . ')'
+        \ . ' ' . a:expr . ')'
         \ . ' (catch Exception e'
-        \ . '   (println (str e))'
-        \ . '   (println (clojure.string/join "\n" (.getStackTrace e)))))'
+        \ . '   (clojure.core/println (clojure.core/str e))'
+        \ . '   (clojure.core/println (clojure.string/join "\n" (.getStackTrace e)))))'
   let qflist = []
   let response = s:eval(expr, {'session': 0})
   if !has_key(response, 'out')
