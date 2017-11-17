@@ -9,11 +9,6 @@ ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 setopt histignorealldups sharehistory
 
-# Powerline
-if [[ -r /usr/share/powerline/bindings/zsh/powerline.zsh ]]; then
-    source /usr/share/powerline/bindings/zsh/powerline.zsh
-fi
-
 export ZSH_THEME="agnoster"
 
 # on login
@@ -68,9 +63,11 @@ setopt NOTIFY
 setopt NOHUP 
 setopt MAILWARN
 export EDITOR="vim"
-export USE_EDITOR=$EDITOR
+export clojureDir=$HOME/Projects/clojure/arc
+export currentDir=$HOME/Projects/ARC
 export VISUAL=$EDITOR
 set editing-mode vi
+
 set blink-matching-paren on
 
 # Use modern completion system
@@ -98,33 +95,18 @@ if [ -x /usr/bin/dircolors ]; then
     alias recompile_assets='RAILS_ENV=staging bundle exec rake assets:precompile'
     alias rake='bundle exec rake -X'
     alias clip='xclip -selection c'
-    alias updateReports='arc_current;bundle exec rake db:migrate:redo VERSION=20141003182022'
+    alias updateReports='bundle exec rake db:migrate:redo VERSION=20141003182022'
     alias cleanUpDocker='docker rmi -f $(docker images | grep "^<none>" | awk "{print $3}")'
     alias setupTest='rvm use ruby-2.2.1@test;arcCurrent;bundle exec rake parallel:drop;bundle exec rake parallel:create;bundle exec rake parallel:prepare'
     alias logTests="rvm use ruby-2.2.1@test;arcCurrent;time rake parallel:spec[^spec/'[mailers| models | requests]'] > log/rspec.log 2>&1 &"
-    alias logFeatures="rvm use ruby-2.2.1@test;arc_current;time rspec spec/features/ > log/rspec_features.log 2>&1 &"
+    alias logFeatures="rvm use ruby-2.2.1@test;arcCurrent;time rspec spec/features/ > log/rspec_features.log 2>&1 &"
     alias cleanUpAssets='arcCurrent; rm public/assets/*.js; rm public/assets/*.css; rm public/assets/*.js.*; rm public/assets/*.css.*;rm public/assets/manifest-*'
     alias winName='xprop'
-    alias kanboardSetup='docker run -d --name kanboard -p 1070:80 -v /$HOME/kanboard:/var/www/html/data -t kanboard/kanboard:master'
-    alias kanboardTakeDown='docker stop kanboard; docker rm kanboard'
-    alias rabbitSetup='arcClojure; docker run -d -p 15672:15672 -p 15674:15674 -p 5672:5672 --name rabbitmq kmyers/rabbitmq'
-    alias rabbitBash='docker exec -it rabbitmq bash'
-    alias rabbitTakeDown='docker stop rabbitmq; docker rm rabbitmq'
-    alias searchSetup='docker run -d -p 9200:9200 -p 9300:9300 --expose 9200 --expose 9300 -v $HOME/Projects/clojure/arc/search:/usr/share/elasticsearch/data --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:5.5.0'
-    alias searchBash='docker exec -it elasticsearch bash'
-    alias searchTakeDown='docker stop elasticsearch; docker rm elasticsearch'
-    alias clojureSetup='docker run -d -p 1099:1099 -p 51246:51246 -p 60290:60290 -p 35168:35168 -p 8080:8080 --link mailcatcher --link rabbitmq --link elasticsearch -v $HOME/Projects/clojure/arc:/arc --name clojure-dev kmyers/arc-dev:1'
-    alias clojureTakeDown='docker stop clojure-dev && docker rm clojure-dev'
-    alias prdSetup='docker run -d -p 1096:1096 -p 51246:51246 -p 60290:60290 -p 35168:35168 -p 8080:8080 --link mailcatcher --link rabbitmq --link elasticsearch --name clojure-prd kmyers/arc-prd:1'
-    alias prdTakeDown='docker stop clojure-prd && docker rm clojure-prd'
-    alias clojureTest='docker run -d -p 1098:1098  -v $HOME/Projects/clojure/arc:/arc --name clojure-test kmyers/arc-test:1 && docker rm clojure-test'
-    alias clojureBuild='docker run -d -p 1097:1097  -v $HOME/Projects/clojure/arc:/arc --name clojure-build kmyers/arc-build:1 && docker rm clojure-build'
-    alias mailCatcherSetup='docker run -d -p 1080:1080 -p 1025:1025 --name mailcatcher schickling/mailcatcher'
-    alias mailCatcherTakeDown='docker stop mailcatcher; docker rm mailcatcher'
     alias dark='xrandr --output DP-4 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-3 --brightness 0.6'
     alias average='xrandr --output DP-4 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-3 --brightness 0.8'
     alias bright='xrandr --output DP-4 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-3 --brightness 1.0'
     alias boot-updates='boot -d boot-deps ancient'
+    alias startMinikube='minikube start --memory 12288 --insecure-registry '192.168.2.79/5000' --disk-size=30g && nohup minikube mount /home/data/Projects/clojure/arc/docker/kubernetes/certs.d:/etc/docker/certs.d/ > /dev/null 2>&1 &'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
 fi
 
@@ -132,11 +114,16 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 alias emacs='emacs -nw --no-desktop'
-alias arcCurrent='cd /$HOME/Projects/ARC'
-alias arcClojure='cd /$HOME/Projects/clojure/arc'
+alias arcCurrent='cd $currentDir'
+alias arcClojure='cd $clojureDir'
 
 missingTests(){
+ cd $clojureDir;
  diff  <(ls test/server/arcTest/server/generative | sed 's/\.clj//g' | sort) <(ls src/arc/shared/aggregate | sed 's/\.cljc//g' | sort) | grep '>' | sed -e 's/>//g'
+}
+
+production(){
+  ssh production -t 'cd /usr/local/www/arc/current;bash'
 }
 
 instanceIP(){
@@ -152,12 +139,25 @@ clear_cache(){
 }
 
 export BOOT_EMIT_TARGET=no
-export ELASTICSEARCH_PORT_9200_TCP_ADDR="127.0.0.1"
-export ELASTICSEARCH_PORT_9200_TCP_PORT="9200"
-export MAILCATCHER_PORT_1025_TCP_ADDR="127.0.0.1"
-export MAILCATCHER_PORT_1025_TCP_PORT="1025"
-export RABBITMQ_PORT_5672_TCP_ADDR="127.0.0.1"
-export RABBITMQ_PORT_5672_TCP_PORT="5672"
+export ELASTICSEARCH_PORT_9200_TCP_ADDR="192.168.99.100"
+export ELASTICSEARCH_PORT_9200_TCP_PORT="30004"
+export MINIO_PORT_9000_TCP_ADDR="192.168.99.100"
+export MINIO_PORT_9000_TCP_PORT="30005"
+export MAILCATCHER_PORT_1025_TCP_ADDR="192.168.99.100"
+export MAILCATCHER_PORT_1025_TCP_PORT="30011"
+#export RABBITMQ_PORT_5672_TCP_ADDR="localhost"
+#export RABBITMQ_PORT_5672_TCP_PORT="4222"
+#export RABBITMQ_PORT_15674_TCP_ADDR="localhost"
+#export RABBITMQ_PORT_15674_TCP_PORT="4223"
+#
+export RABBITMQ_PORT_5672_TCP_ADDR="192.168.99.100"
+export RABBITMQ_PORT_5672_TCP_PORT="30003"
+export RABBITMQ_PORT_15674_TCP_ADDR="192.168.99.100"
+export RABBITMQ_PORT_15674_TCP_PORT="30002"
+export KUBERNETES_SERVICE_HOST="192.168.99.100"
+export KUBERNETES_SERVICE_PORT="8443"
+export SCHEDULER_CERT_PATH="/home/keegan/.minikube/apiserver.crt"
+export SCHEDULER_KEY_PATH="/home/keegan/.minikube/apiserver.key"
 export DOCKER_HOST=unix:///var/run/docker.sock
 export BOOT_JVM_OPTIONS='-Xmx10g -client -XX:+TieredCompilation
 -XX:TieredStopAtLevel=1 -Xverify:none -XX:+UseConcMarkSweepGC
@@ -165,4 +165,4 @@ export BOOT_JVM_OPTIONS='-Xmx10g -client -XX:+TieredCompilation
 -Djavax.net.ssl.trustStorePassword="changeit"
 -XX:+CMSClassUnloadingEnabled -Xmx512m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
 
-export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin" # Add RVM to PATH for scripting
