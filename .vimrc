@@ -329,6 +329,16 @@ set laststatus=2                " tell VIM to always put a status line in, even
 set cmdheight=2                 " use a status bar that is 2 rows high
 " }}}
 "
+"
+function! RedirResult(msgcmd)
+    redir! > tmp.out
+    silent execute a:msgcmd
+    redir END
+    :let @+=system("tail -n +4 tmp.out")
+    :silent :exe 'norm i' . system("rm tmp.out")
+endfunction
+
+nnoremap <silent> cps :call RedirResult("Eval")<CR>
 set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.
 set pastetoggle=<F2>

@@ -67,6 +67,7 @@ export clojureDir=$HOME/Projects/clojure/arc
 export currentDir=$HOME/Projects/ARC
 export VISUAL=$EDITOR
 set editing-mode vi
+set keymap vi-command
 
 set blink-matching-paren on
 
@@ -106,7 +107,6 @@ if [ -x /usr/bin/dircolors ]; then
     alias average='xrandr --output DP-4 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-3 --brightness 0.8'
     alias bright='xrandr --output DP-4 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-3 --brightness 1.0'
     alias boot-updates='boot -d boot-deps ancient'
-    alias startMinikube='minikube start --memory 12288 --insecure-registry '192.168.2.79/5000' --disk-size=30g && nohup minikube mount /home/data/Projects/clojure/arc/docker/kubernetes/certs.d:/etc/docker/certs.d/ > /dev/null 2>&1 &'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
 fi
 
@@ -117,25 +117,59 @@ alias emacs='emacs -nw --no-desktop'
 alias arcCurrent='cd $currentDir'
 alias arcClojure='cd $clojureDir'
 
-missingTests(){
+function devKube() {
+ cd $clojureDir;
+  nohup ./restart_minikube.sh "dev" > log/minikube_startup 2&>1 &
+}
+
+function stagingKube() {
+ cd $clojureDir;
+ nohup ./restart_minikube.sh  > log/minikube_startup 2&>1 &
+}
+
+function missingTests() {
  cd $clojureDir;
  diff  <(ls test/server/arcTest/server/generative | sed 's/\.clj//g' | sort) <(ls src/arc/shared/aggregate | sed 's/\.cljc//g' | sort) | grep '>' | sed -e 's/>//g'
 }
 
-production(){
-  ssh production -t 'cd /usr/local/www/arc/current;bash'
+function stagingRepl() {
+  ssh -o StrictHostKeyChecking=no -i $HOME/.minikube/machines/minikube/id_rsa docker@$(minikube ip) -p 22 -t 'docker exec -it $(docker ps | grep arc-staging | head -n 1 | awk {'\''print $1'\''}) /usr/local/bin/boot repl -c -H localhost -p 9001'
 }
 
-instanceIP(){
+function internal_ip() {
+  ip route get 8.8.8.8 | awk '{print $NF; exit}'
+}
+
+function production() {
+  ssh production -Yt 'cd /usr/local/www/arc/current;tmux new-session -A -s 0'
+}
+
+function APS165M() {
+  ssh APS165M -Yt 'tmux new-session -A -s 0'
+}
+
+function importLogs() {
+  boot mass-import -e "dev" > log/import-results 2>&1 &
+}
+
+function APS164() {
+  ssh APS164 -Yt 'cd /usr/local/www/arc/current;tmux new-session -A -s 0'
+}
+
+function instanceIP() {
   docker inspect $1 | grep '"IPAddress":' | awk {'print $2'} | tr "," " " | tr "\"" " "
 }
 
-filesChanged(){
+function filesChanged() {
   git status | grep -E 'modified|deleted|new' | wc -l
 }
 
-clear_cache(){
+function clear_cache() {
   sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
+}
+
+function streamLogs() {
+ kubectl logs -f $(kubectl get pods | grep $1 | awk {'print $1'}) $2
 }
 
 export BOOT_EMIT_TARGET=no
@@ -145,24 +179,15 @@ export MINIO_PORT_9000_TCP_ADDR="192.168.99.100"
 export MINIO_PORT_9000_TCP_PORT="30005"
 export MAILCATCHER_PORT_1025_TCP_ADDR="192.168.99.100"
 export MAILCATCHER_PORT_1025_TCP_PORT="30011"
-#export RABBITMQ_PORT_5672_TCP_ADDR="localhost"
-#export RABBITMQ_PORT_5672_TCP_PORT="4222"
-#export RABBITMQ_PORT_15674_TCP_ADDR="localhost"
-#export RABBITMQ_PORT_15674_TCP_PORT="4223"
-#
-export RABBITMQ_PORT_5672_TCP_ADDR="192.168.99.100"
-export RABBITMQ_PORT_5672_TCP_PORT="30003"
-export RABBITMQ_PORT_15674_TCP_ADDR="192.168.99.100"
-export RABBITMQ_PORT_15674_TCP_PORT="30002"
+export MB_TCP_ADDR="192.168.99.100"
+export MB_PORT_4222_TCP_PORT="30002"
 export KUBERNETES_SERVICE_HOST="192.168.99.100"
 export KUBERNETES_SERVICE_PORT="8443"
-export SCHEDULER_CERT_PATH="/home/keegan/.minikube/apiserver.crt"
-export SCHEDULER_KEY_PATH="/home/keegan/.minikube/apiserver.key"
+export SCHEDULER_CERT_PATH="$HOME/.minikube/ca.crt"
+export TOKEN_PATH="$HOME/.minikube/serviceToken"
 export DOCKER_HOST=unix:///var/run/docker.sock
-export BOOT_JVM_OPTIONS='-Xmx10g -client -XX:+TieredCompilation
+export BOOT_JVM_OPTIONS='-Xmx10g -Xms6g -client -XX:+TieredCompilation
 -XX:TieredStopAtLevel=1 -Xverify:none -XX:+UseConcMarkSweepGC
--Djavax.net.ssl.trustStore="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts"
--Djavax.net.ssl.trustStorePassword="changeit"
--XX:+CMSClassUnloadingEnabled -Xmx512m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
+-XX:+CMSClassUnloadingEnabled -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
 
 export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin" # Add RVM to PATH for scripting
