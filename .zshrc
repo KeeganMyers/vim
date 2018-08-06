@@ -25,11 +25,11 @@ HISTFILE=~/.zsh_history
 
 # Customize to your needs...
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/usr/local/git/bin:/opt/local/bin
-ZSH_THEME_GIT_PROMPT_PREFIX=" on %{$fg[magenta]%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[green]%}!"
+ZSH_THEME_GIT_PROMPT_DIRTY="$fg[red]+"
+ZSH_THEME_GIT_PROMPT_CLEAN="$fg[green]"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[green]%}?"
-ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 setopt RM_STAR_WAIT
 setopt interactivecomments
@@ -81,9 +81,9 @@ if [ -x /usr/bin/dircolors ]; then
     alias ls='ls --color=auto'
     alias mate-terminal='mate-terminal -e tmux'
     alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
-    alias grep='grep  --color=auto'
+    alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
-    alias update_master='git remote update'
+    alias git='lab'
     alias stop_workers='bundle exec rake environment RAILS_ENV=development resque:stop_workers'
     alias start_workers='bundle exec rake environment RAILS_ENV=development resque:start_workers'
     alias restart_workers='stop_workers; start_workers'
@@ -108,6 +108,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias bright='xrandr --output DP-4 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-3 --brightness 1.0'
     alias boot-updates='boot -d boot-deps ancient'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
+    alias devRepl='boot repl -c -H localhost -p 35168'
 fi
 
 alias ll='ls -alF'
@@ -119,12 +120,12 @@ alias arcClojure='cd $clojureDir'
 
 function devKube() {
  cd $clojureDir;
-  nohup ./restart_minikube.sh "dev" > log/minikube_startup 2&>1 &
+  ./restart_minikube.sh "dev" > log/minikube_startup 2&>1 &
 }
 
 function stagingKube() {
  cd $clojureDir;
- nohup ./restart_minikube.sh  > log/minikube_startup 2&>1 &
+ ./restart_minikube.sh  > log/minikube_startup 2&>1 &
 }
 
 function missingTests() {
@@ -153,7 +154,7 @@ function importLogs() {
 }
 
 function APS164() {
-  ssh APS164 -Yt 'cd /usr/local/www/arc/current;tmux new-session -A -s 0'
+  ssh APS164 -Yt 'tmux new-session -A -s 0'
 }
 
 function instanceIP() {
@@ -164,6 +165,10 @@ function filesChanged() {
   git status | grep -E 'modified|deleted|new' | wc -l
 }
 
+function removeKubeJobs() {
+ nohup kubectl delete job $(kubectl get jobs | awk '{print $1}') &
+}
+
 function clear_cache() {
   sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
 }
@@ -172,7 +177,56 @@ function streamLogs() {
  kubectl logs -f $(kubectl get pods | grep $1 | awk {'print $1'}) $2
 }
 
+function git_prompt_info() {
+  if [[ "$(command git config --get oh-my-zsh.hide-status 2>/dev/null)" != "1" ]]; then
+    ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
+    ref=$(command git rev-parse --short HEAD 2> /dev/null) || return 0
+    ref="$(command echo ${ref#refs/heads/})"
+    length=${#ref}
+
+    maxLength=$(command git config --get oh-my-zsh.max-branch-length 2>/dev/null)
+    if [[ -z ${maxLength} ]]; then
+      maxLength=20
+    fi
+
+
+    if [[ ${length} -gt ${maxLength} ]]; then
+      regex=$(command git config --get oh-my-zsh.prefix-regex 2>/dev/null)
+      if [[ -n ${regex} ]]; then
+        ref=$(command echo ${ref} | sed "s/${regex}//1" ) #${regex})
+      fi
+
+      prefixLength=$(command git config --get oh-my-zsh.prefix-length 2>/dev/null)
+      if [[ -z ${prefixLength} ]]; then
+        prefixLength=0
+      fi
+      if [[ ${prefixLength} -gt 0 ]]; then
+        prefix=$(command echo ${ref} | cut -c ${prefixLength})
+        ref=$(command echo ${ref} | cut -c `expr ${prefixLength} + 1`-)
+        length=${#ref}
+      fi
+    fi
+    if [[ ${length} -gt ${maxLength} ]]; then
+      suffixLength=$(command git config --get oh-my-zsh.suffix-length 2>/dev/null)
+      if [[ -z ${suffixLength} ]]; then
+        suffixLength=0
+      fi
+
+      length=${#ref}
+      suffixStart=`expr ${length} - ${suffixLength} + 1`
+      separatorLength=3 #3 dots...
+      nameEnd=`expr ${maxLength} - ${suffixLength} - ${separatorLength}`
+      ref="$(command echo ${ref} | cut -c 1-${nameEnd})...$(command echo ${ref} | cut -c ${suffixStart}-)"
+    fi
+
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref}$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
+  fi
+}
+
+PROMPT='$fg[blue]%n@%m%15<..<%~%<< $(git_prompt_info)λ '
 export BOOT_EMIT_TARGET=no
+export STORE_PORT_5432_TCP_ADDR="192.168.99.100"
+export STORE_PORT_5432_TCP_PORT="30021"
 export ELASTICSEARCH_PORT_9200_TCP_ADDR="192.168.99.100"
 export ELASTICSEARCH_PORT_9200_TCP_PORT="30004"
 export MINIO_PORT_9000_TCP_ADDR="192.168.99.100"
