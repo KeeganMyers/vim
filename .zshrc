@@ -66,6 +66,7 @@ export EDITOR="vim"
 export clojureDir=$HOME/Projects/clojure/arc
 export currentDir=$HOME/Projects/ARC
 export VISUAL=$EDITOR
+export TERMINAL='alacritty'
 set editing-mode vi
 set keymap vi-command
 
@@ -79,7 +80,7 @@ compinit
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
-    alias mate-terminal='mate-terminal -e tmux'
+    alias mate-terminal='alacritty -e tmux'
     alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
@@ -149,6 +150,11 @@ function APS165M() {
   ssh APS165M -Yt 'tmux new-session -A -s 0'
 }
 
+
+function support() {
+  ssh support -Yt 'tmux new-session -A -s 0'
+}
+
 function importLogs() {
   boot mass-import -e "dev" > log/import-results 2>&1 &
 }
@@ -171,6 +177,18 @@ function removeKubeJobs() {
 
 function clear_cache() {
   sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
+}
+
+function gitPush() {
+  git push origin $(git branch | grep '*' | awk {'print $2'})
+}
+
+function convert_msg() {
+  msgconvert *.msg
+}
+
+function natsSubs() {
+ http://127.0.0.1:30012/subsz | grep "num_subscriptions"
 }
 
 function streamLogs() {
@@ -223,19 +241,18 @@ function git_prompt_info() {
   fi
 }
 
-PROMPT='$fg[blue]%n@%m%15<..<%~%<< $(git_prompt_info)λ '
 export BOOT_EMIT_TARGET=no
-export STORE_PORT_5432_TCP_ADDR="192.168.99.100"
+export STORE_PORT_5432_TCP_ADDR="127.0.0.1"
 export STORE_PORT_5432_TCP_PORT="30021"
-export ELASTICSEARCH_PORT_9200_TCP_ADDR="192.168.99.100"
+export ELASTICSEARCH_PORT_9200_TCP_ADDR="127.0.0.1"
 export ELASTICSEARCH_PORT_9200_TCP_PORT="30004"
-export MINIO_PORT_9000_TCP_ADDR="192.168.99.100"
+export MINIO_PORT_9000_TCP_ADDR="127.0.0.1"
 export MINIO_PORT_9000_TCP_PORT="30005"
-export MAILCATCHER_PORT_1025_TCP_ADDR="192.168.99.100"
+export MAILCATCHER_PORT_1025_TCP_ADDR="127.0.0.1"
 export MAILCATCHER_PORT_1025_TCP_PORT="30011"
-export MB_TCP_ADDR="192.168.99.100"
+export MB_TCP_ADDR="127.0.0.1"
 export MB_PORT_4222_TCP_PORT="30002"
-export KUBERNETES_SERVICE_HOST="192.168.99.100"
+export KUBERNETES_SERVICE_HOST="127.0.0.1"
 export KUBERNETES_SERVICE_PORT="8443"
 export SCHEDULER_CERT_PATH="$HOME/.minikube/ca.crt"
 export TOKEN_PATH="$HOME/.minikube/serviceToken"
@@ -244,4 +261,4 @@ export BOOT_JVM_OPTIONS='-Xmx10g -Xms6g -client -XX:+TieredCompilation
 -XX:TieredStopAtLevel=1 -Xverify:none -XX:+UseConcMarkSweepGC
 -XX:+CMSClassUnloadingEnabled -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
 
-export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin" # Add RVM to PATH for scripting
