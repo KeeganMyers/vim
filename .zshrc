@@ -104,9 +104,9 @@ if [ -x /usr/bin/dircolors ]; then
     alias logFeatures="rvm use ruby-2.2.1@test;arcCurrent;time rspec spec/features/ > log/rspec_features.log 2>&1 &"
     alias cleanUpAssets='arcCurrent; rm public/assets/*.js; rm public/assets/*.css; rm public/assets/*.js.*; rm public/assets/*.css.*;rm public/assets/manifest-*'
     alias winName='xprop'
-    alias dark='xrandr --output DP-4 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-3 --brightness 0.6'
-    alias average='xrandr --output DP-4 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-3 --brightness 0.8'
-    alias bright='xrandr --output DP-4 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-3 --brightness 1.0'
+    alias dark='xrandr --output DP-2 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-5 --brightness 0.6'
+    alias average='xrandr --output DP-2 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-5 --brightness 0.8'
+    alias bright='xrandr --output DP-2 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-5 --brightness 1.0'
     alias boot-updates='boot -d boot-deps ancient'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
     alias devRepl='boot repl -c -H localhost -p 35168'
@@ -146,10 +146,9 @@ function production() {
   ssh production -Yt 'cd /usr/local/www/arc/current;tmux new-session -A -s 0'
 }
 
-function APS165M() {
-  ssh APS165M -Yt 'tmux new-session -A -s 0'
+function APS165() {
+  ssh APS165 -Yt 'tmux new-session -A -s 0'
 }
-
 
 function support() {
   ssh support -Yt 'tmux new-session -A -s 0'
@@ -258,7 +257,7 @@ export SCHEDULER_CERT_PATH="$HOME/.minikube/ca.crt"
 export TOKEN_PATH="$HOME/.minikube/serviceToken"
 export DOCKER_HOST=unix:///var/run/docker.sock
 export BOOT_JVM_OPTIONS='-Xmx10g -Xms6g -client -XX:+TieredCompilation
--XX:TieredStopAtLevel=1 -Xverify:none -XX:+UseConcMarkSweepGC
+-XX:TieredStopAtLevel=1 -Xverify:none --add-modules java.xml.bind
 -XX:+CMSClassUnloadingEnabled -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
 
 export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin" # Add RVM to PATH for scripting
