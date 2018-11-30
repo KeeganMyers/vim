@@ -85,6 +85,10 @@ if [ -x /usr/bin/dircolors ]; then
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias git='lab'
+    alias cljsDev='shadow-cljs watch app'
+    alias cljsBuild='shadow-cljs release app'
+    alias cljsReport='npx shadow-cljs run shadow.cljs.build-report app report.html'
+    alias cljsTest='shadow-cljs compile test && node out/node-tests.js'
     alias stop_workers='bundle exec rake environment RAILS_ENV=development resque:stop_workers'
     alias start_workers='bundle exec rake environment RAILS_ENV=development resque:start_workers'
     alias restart_workers='stop_workers; start_workers'
@@ -253,11 +257,15 @@ export MB_TCP_ADDR="127.0.0.1"
 export MB_PORT_4222_TCP_PORT="30002"
 export KUBERNETES_SERVICE_HOST="127.0.0.1"
 export KUBERNETES_SERVICE_PORT="8443"
-export SCHEDULER_CERT_PATH="$HOME/.minikube/ca.crt"
-export TOKEN_PATH="$HOME/.minikube/serviceToken"
 export DOCKER_HOST=unix:///var/run/docker.sock
-export BOOT_JVM_OPTIONS='-Xmx10g -Xms6g -client -XX:+TieredCompilation
--XX:TieredStopAtLevel=1 -Xverify:none --add-modules java.xml.bind
--XX:+CMSClassUnloadingEnabled -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
+export BOOT_JVM_OPTIONS='-Xmx3g -server \
+                      -XX:-TieredCompilation \
+                      -XX:TieredStopAtLevel=1 -Xverify:none \
+                      -XX:+CMSParallelRemarkEnabled \
+                      -XX:+CMSClassUnloadingEnabled \
+                      -Xmx512m -Dcom.sun.management.jmxremote \
+                      -Dcom.sun.management.jmxremote.ssl=false \
+                      -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 \
+                      -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
 
 export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin" # Add RVM to PATH for scripting

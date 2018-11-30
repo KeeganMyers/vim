@@ -13,10 +13,13 @@ syntax on
 filetype plugin indent on
 
 let mapleader=","
+let g:ycm_rust_src_path="/home//Developer/rust-master/src/"
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 set hidden
 set tabstop=2
+"enable mouse support
+set mouse=a
 set nowrap
 set backspace=indent,eol,start
 set smartindent
@@ -63,8 +66,7 @@ set foldcolumn=2                " add a fold column
 set foldmethod=syntax           " detect triple-{ style fold markers
 set foldlevelstart=99           " start out with everything unfolded
 let javascript_fold=1         " JavaScript
-let g:clojure_folds="defn,def,ns,let,macro,defprotocol,defrecord,s/defrecord,extend-type,s/defn,s/def,[,{,("
-let clojure_fold=1
+let rust_fold=1
 let ruby_fold=1               " Ruby
 set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
                                 " which commands trigger auto-unfold
@@ -220,48 +222,13 @@ nmap <CR> o<Esc>
 " Highlighting {{{
 if &t_Co > 2 || has("gui_running")
    syntax on                    " switch syntax highlighting on, when the terminal has colors
-au BufNewFile,BufRead *.cljc set filetype=clojure
-au BufNewFile,BufRead *.clj set filetype=clojure
-au BufNewFile,BufRead *.boot set filetype=clojure
-au BufNewFile,BufRead *.cljx set filetype=clojure
-au BufNewFile,BufRead *.cljs set filetype=clojure
+au BufNewFile,BufRead *.rs set filetype=rust
 au BufNewFile,BufRead *.less set filetype=css
 endif
 " }}}
 
 " Allow quick additions to the spelling dict
 nnoremap <leader>g :spellgood <c-r><c-w>
-
-let g:clojure_syntax_keywords = {
-    \ 'clojureMacro': ["defproject", "defcustom"],
-    \ 'clojureFunc': ["string/join", "string/replace"]
-    \ }
-let g:clojure_fuzzy_indent = 1
-let g:clojure_fuzzy_indent_blacklist = ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
-let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
-let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
-let g:clojure_align_multiline_strings = 1
-let g:clojure_align_subforms = 1
-"let vimclojure#HighlightBuiltins=1
-"let vimclojure#FuzzyIndent=1
-"let vimclojure#HighlightContrib=1
-"let vimclojure#DynamicHighlighting=1
-function! Config_Rainbow()
-    call rainbow_parentheses#load(0)
-    call rainbow_parentheses#load(1)
-    call rainbow_parentheses#load(2)
-endfunction
-
-function! Load_Rainbow()
-    call rainbow_parentheses#activate()
-endfunction
-
-augroup TastetheRainbow
-    autocmd!
-    autocmd Syntax * call Config_Rainbow()
-    autocmd VimEnter,BufRead,BufWinEnter,BufNewFile * call Load_Rainbow()
-augroup END
-
 
 function! DeleteFile(...)
   if(exists('a:1'))
