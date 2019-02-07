@@ -110,6 +110,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias boot-updates='boot -d boot-deps ancient'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
     alias devRepl='boot repl -c -H localhost -p 35168'
+    alias cljsAssetReport='npx shadow-cljs run shadow.cljs.build-report app report.html'
 fi
 
 alias ll='ls -alF'
