@@ -151,6 +151,16 @@ function APS165() {
   ssh APS165 -Yt 'tmux new-session -A -s 0'
 }
 
+
+function APS166() {
+  ssh APS166 -Yt 'tmux new-session -A -s 0'
+}
+
+
+function blackbetty() {
+  ssh blackbetty -Yt 'tmux new-session -A -s 0'
+}
+
 function support() {
   ssh support -Yt 'tmux new-session -A -s 0'
 }
