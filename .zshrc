@@ -114,6 +114,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias boot-updates='boot -d boot-deps ancient'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
     alias devRepl='boot repl -c -H localhost -p 35168'
+    alias rust-repl='evcxr'
 fi
 
 alias ll='ls -alF'

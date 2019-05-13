@@ -57,8 +57,28 @@ set nobackup
 set shortmess+=I
 set clipboard=unnamedplus
 set autoread
+let g:autofmt_autosave = 1
 nnoremap <C-e> 2<C-e>
 nnoremap <C-y> 2<C-y>
+
+" a basic set up for LanguageClient-Neovim
+" << LSP >> {{{
+let g:LanguageClient_autoStart = 0
+nnoremap <leader>lcs :LanguageClientStart<CR>
+" if you want it to turn on automatically
+" let g:LanguageClient_autoStart = 1
+
+let g:LanguageClient_serverCommands = {
+    \ 'python': ['pyls'],
+    \ 'rust': ['rustup', 'run', 'nightly', 'rls'],
+    \ 'javascript': ['javascript-typescript-stdio'],
+    \ 'go': ['go-langserver'] }
+
+noremap <silent> H :call LanguageClient_textDocument_hover()<CR>
+noremap <silent> Z :call LanguageClient_textDocument_definition()<CR>
+noremap <silent> R :call LanguageClient_textDocument_rename()<CR>
+noremap <silent> S :call LanugageClient_textDocument_documentSymbol()<CR>
+" }}}
 
 " Folding rules {{{
 set foldenable                  " enable folding
