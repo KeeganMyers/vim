@@ -13,8 +13,25 @@ syntax on
 filetype plugin indent on
 
 let mapleader=","
+let g:typescript_indent_disable = 1
+let g:typescript_opfirst='\%([<>=,?^%|*/&]\|\([-:+]\)\1\@!\|!=\|in\%(stanceof\)\=\>\)'
+let g:typescript_compiler_binary = 'tsc'
+let g:typescript_compiler_options = ''
+let g:tsuquyomi_completion_detail = 1
+let g:tsuquyomi_shortest_import_path = 1
+let g:ale_fixers = {
+\    'javascript': ['eslint'],
+\    'typescript': ['prettier'],
+\    'vue': ['eslint'],
+\    'scss': ['prettier'],
+\    'html': ['prettier']
+\}
+let g:ale_fix_on_save = 1
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
+set ballooneval
+autocmd BufNewFile,BufRead *.ts setlocal filetype=typescript
+autocmd FileType typescript nmap <buffer> <Leader>t : <C-u>echo tsuquyomi#hint()<CR>
 set hidden
 set tabstop=2
 set nowrap
@@ -226,22 +243,12 @@ au BufNewFile,BufRead *.boot set filetype=clojure
 au BufNewFile,BufRead *.cljx set filetype=clojure
 au BufNewFile,BufRead *.cljs set filetype=clojure
 au BufNewFile,BufRead *.less set filetype=css
+au BufNewFile,BufRead *.ts set filetype=typescript
 endif
 " }}}
 
 " Allow quick additions to the spelling dict
 nnoremap <leader>g :spellgood <c-r><c-w>
-
-let g:clojure_syntax_keywords = {
-    \ 'clojureMacro': ["defproject", "defcustom"],
-    \ 'clojureFunc': ["string/join", "string/replace"]
-    \ }
-let g:clojure_fuzzy_indent = 1
-let g:clojure_fuzzy_indent_blacklist = ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
-let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
-let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
-let g:clojure_align_multiline_strings = 1
-let g:clojure_align_subforms = 1
 "let vimclojure#HighlightBuiltins=1
 "let vimclojure#FuzzyIndent=1
 "let vimclojure#HighlightContrib=1
