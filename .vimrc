@@ -19,13 +19,6 @@ let g:typescript_compiler_binary = 'tsc'
 let g:typescript_compiler_options = ''
 let g:tsuquyomi_completion_detail = 1
 let g:tsuquyomi_shortest_import_path = 1
-let g:ale_fixers = {
-\    'javascript': ['eslint'],
-\    'typescript': ['prettier'],
-\    'vue': ['eslint'],
-\    'scss': ['prettier'],
-\    'html': ['prettier']
-\}
 let g:ale_fix_on_save = 1
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
@@ -354,3 +347,12 @@ vmap Q gp
 nmap Q gqap
 map <silent> ,/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
+
+" Put these lines at the very end of your vimrc file.
+
+" Load all plugins now.
+" Plugins need to be added to runtimepath before helptags can be generated.
+packloadall
+" Load all of the helptags now, after plugins have been loaded.
+" All messages and errors will be ignored.
+silent! helptags ALL
