@@ -13,15 +13,16 @@ syntax on
 filetype plugin indent on
 
 let mapleader=","
-let g:typescript_indent_disable = 1
+let g:typescript_indent_disable = 0
 let g:typescript_opfirst='\%([<>=,?^%|*/&]\|\([-:+]\)\1\@!\|!=\|in\%(stanceof\)\=\>\)'
 let g:typescript_compiler_binary = 'tsc'
 let g:typescript_compiler_options = ''
 let g:tsuquyomi_completion_detail = 1
 let g:tsuquyomi_shortest_import_path = 1
+let g:tsuquyomi_definition_split=1
 let g:ale_fixers = {
 \    'javascript': ['eslint'],
-\    'typescript': ['prettier'],
+\    'typescript': ['eslint'],
 \    'vue': ['eslint'],
 \    'scss': ['prettier'],
 \    'html': ['prettier']
@@ -31,9 +32,7 @@ nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
-set ballooneval
 autocmd BufNewFile,BufRead *.ts setlocal filetype=typescript
-autocmd FileType typescript nmap <buffer> <Leader>t : <C-u>echo tsuquyomi#hint()<CR>
 set hidden
 set tabstop=2
 set nowrap
@@ -71,7 +70,9 @@ set cursorline
 set noerrorbells
 set nobackup
 set shortmess+=I
-set clipboard=unnamedplus
+set clipboard=unnamed
+vmap <C-x> :!pbcopy<CR>
+vmap <C-c> :w !pbcopy<CR><CR>
 set autoread
 nnoremap <C-e> 2<C-e>
 nnoremap <C-y> 2<C-y>
