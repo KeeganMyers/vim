@@ -14,9 +14,11 @@ filetype plugin indent on
 
 let mapleader=","
 let g:ycm_rust_src_path="/home//Developer/rust-master/src/"
+let g:racer_cmd = "$HOME/.cargo/bin/racer"
+let g:racer_experimental_completer = 1
+let g:racer_insert_paren = 1
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
-set hidden
 set tabstop=2
 "enable mouse support
 set mouse=a
@@ -55,11 +57,15 @@ set cursorline
 set noerrorbells
 set nobackup
 set shortmess+=I
-set clipboard=unnamedplus
+set clipboard=unnamed
 set autoread
 let g:autofmt_autosave = 1
 nnoremap <C-e> 2<C-e>
 nnoremap <C-y> 2<C-y>
+au FileType rust nmap gd <Plug>(rust-def)
+au FileType rust nmap gs <Plug>(rust-def-split)
+au FileType rust nmap gx <Plug>(rust-def-vertical)
+au FileType rust nmap <leader>gd <Plug>(rust-doc)
 
 " a basic set up for LanguageClient-Neovim
 " << LSP >> {{{
