@@ -4,7 +4,7 @@ export PATH=usr/bin:$PATH
 #export ZSH_THEME="muse"
 export ZSH_THEME="simple"
 export TERM=xterm-256color
-plugins=(git colored-man-pages docker command-not-found  debian git-extras git-hubflow themes tmux vi-mode debian)
+plugins=(git colored-man-pages docker command-not-found  debian git-extras git-hubflow themes tmux vi-mode)
 ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 setopt histignorealldups sharehistory
@@ -79,65 +79,21 @@ compinit
 
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
+    alias ls='exa'
     alias mate-terminal='alacritty -e tmux'
     alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias git='lab'
-    alias cljsDev='shadow-cljs watch app'
-    alias cljsBuild='shadow-cljs release app'
-    alias cljsReport='npx shadow-cljs run shadow.cljs.build-report app report.html'
-    alias cljsTest='shadow-cljs compile test && node out/node-tests.js'
-    alias stop_workers='bundle exec rake environment RAILS_ENV=development resque:stop_workers'
-    alias start_workers='bundle exec rake environment RAILS_ENV=development resque:start_workers'
-    alias restart_workers='stop_workers; start_workers'
-    alias stop_scheduler='bundle exec rake environment RAILS_ENV=development resque:stop_scheduler'
-    alias start_scheduler='bundle exec rake environment RAILS_ENV=development resque:start_scheduler'
-    alias restart_scheduler='stop_scheduler; start_scheduler'
-    alias restart_background_services='stop_workers;stop_scheduler;start_workers;start_scheduler'
-    alias start_redis='sudo /etc/init.d/redis-server start'
-    alias stop_redis='sudo /etc/init.d/redis-server stop'
-    alias recompile_assets='RAILS_ENV=staging bundle exec rake assets:precompile'
-    alias rake='bundle exec rake -X'
+    alias grep='rg'
     alias clip='xclip -selection c'
-    alias updateReports='bundle exec rake db:migrate:redo VERSION=20141003182022'
     alias cleanUpDocker='docker rmi -f $(docker images | grep "^<none>" | awk "{print $3}")'
-    alias setupTest='rvm use ruby-2.2.1@test;arcCurrent;bundle exec rake parallel:drop;bundle exec rake parallel:create;bundle exec rake parallel:prepare'
-    alias logTests="rvm use ruby-2.2.1@test;arcCurrent;time rake parallel:spec[^spec/'[mailers| models | requests]'] > log/rspec.log 2>&1 &"
-    alias logFeatures="rvm use ruby-2.2.1@test;arcCurrent;time rspec spec/features/ > log/rspec_features.log 2>&1 &"
-    alias cleanUpAssets='arcCurrent; rm public/assets/*.js; rm public/assets/*.css; rm public/assets/*.js.*; rm public/assets/*.css.*;rm public/assets/manifest-*'
     alias winName='xprop'
     alias dark='xrandr --output DP-2 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-5 --brightness 0.6'
     alias average='xrandr --output DP-2 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-5 --brightness 0.8'
     alias bright='xrandr --output DP-2 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-5 --brightness 1.0'
-    alias boot-updates='boot -d boot-deps ancient'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
-    alias devRepl='boot repl -c -H localhost -p 35168'
     alias rust-repl='evcxr'
 fi
 
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
 alias emacs='emacs -nw --no-desktop'
-alias arcCurrent='cd $currentDir'
-alias arcClojure='cd $clojureDir'
-
-function devKube() {
- cd $clojureDir;
-  ./restart_minikube.sh "dev" > log/minikube_startup 2&>1 &
-}
-
-function stagingKube() {
- cd $clojureDir;
- ./restart_minikube.sh  > log/minikube_startup 2&>1 &
-}
-
-function missingTests() {
- cd $clojureDir;
- diff  <(ls test/server/arcTest/server/generative | sed 's/\.clj//g' | sort) <(ls src/arc/shared/aggregate | sed 's/\.cljc//g' | sort) | grep '>' | sed -e 's/>//g'
-}
 
 function stagingRepl() {
   ssh -o StrictHostKeyChecking=no -i $HOME/.minikube/machines/minikube/id_rsa docker@$(minikube ip) -p 22 -t 'docker exec -it $(docker ps | grep arc-staging | head -n 1 | awk {'\''print $1'\''}) /usr/local/bin/boot repl -c -H localhost -p 9001'
@@ -147,36 +103,12 @@ function internal_ip() {
   ip route get 8.8.8.8 | awk '{print $NF; exit}'
 }
 
-function production() {
-  ssh production -Yt 'cd /usr/local/www/arc/current;tmux new-session -A -s 0'
-}
-
-function APS165() {
-  ssh APS165 -Yt 'tmux new-session -A -s 0'
-}
-
-function support() {
-  ssh support -Yt 'tmux new-session -A -s 0'
-}
-
-function importLogs() {
-  boot mass-import -e "dev" > log/import-results 2>&1 &
-}
-
-function APS164() {
-  ssh APS164 -Yt 'tmux new-session -A -s 0'
-}
-
 function instanceIP() {
   docker inspect $1 | grep '"IPAddress":' | awk {'print $2'} | tr "," " " | tr "\"" " "
 }
 
 function filesChanged() {
   git status | grep -E 'modified|deleted|new' | wc -l
-}
-
-function removeKubeJobs() {
- nohup kubectl delete job $(kubectl get jobs | awk '{print $1}') &
 }
 
 function clear_cache() {
@@ -189,14 +121,6 @@ function gitPush() {
 
 function convert_msg() {
   msgconvert *.msg
-}
-
-function natsSubs() {
- http://127.0.0.1:30012/subsz | grep "num_subscriptions"
-}
-
-function streamLogs() {
- kubectl logs -f $(kubectl get pods | grep $1 | awk {'print $1'}) $2
 }
 
 function git_prompt_info() {
@@ -245,28 +169,5 @@ function git_prompt_info() {
   fi
 }
 
-export BOOT_EMIT_TARGET=no
-export STORE_PORT_5432_TCP_ADDR="127.0.0.1"
-export STORE_PORT_5432_TCP_PORT="30021"
-export ELASTICSEARCH_PORT_9200_TCP_ADDR="127.0.0.1"
-export ELASTICSEARCH_PORT_9200_TCP_PORT="30004"
-export MINIO_PORT_9000_TCP_ADDR="127.0.0.1"
-export MINIO_PORT_9000_TCP_PORT="30005"
-export MAILCATCHER_PORT_1025_TCP_ADDR="127.0.0.1"
-export MAILCATCHER_PORT_1025_TCP_PORT="30011"
-export MB_TCP_ADDR="127.0.0.1"
-export MB_PORT_4222_TCP_PORT="30002"
-export KUBERNETES_SERVICE_HOST="127.0.0.1"
-export KUBERNETES_SERVICE_PORT="8443"
 export DOCKER_HOST=unix:///var/run/docker.sock
-export BOOT_JVM_OPTIONS='-Xmx3g -server \
-                      -XX:-TieredCompilation \
-                      -XX:TieredStopAtLevel=1 -Xverify:none \
-                      -XX:+CMSParallelRemarkEnabled \
-                      -XX:+CMSClassUnloadingEnabled \
-                      -Xmx512m -Dcom.sun.management.jmxremote \
-                      -Dcom.sun.management.jmxremote.ssl=false \
-                      -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 \
-                      -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false'
-
 export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin" # Add RVM to PATH for scripting
