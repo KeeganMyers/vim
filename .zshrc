@@ -10,6 +10,9 @@ source $ZSH/oh-my-zsh.sh
 setopt histignorealldups sharehistory
 
 export ZSH_THEME="agnoster"
+export RUST_SRC_PATH=${HOME}/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/
+export DYLD_LIBRARY_PATH=${HOME}/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib
+export RLS_ROOT=${HOME}/git/rust/rls
 
 # on login
 if [ ! -f /tmp/login ]; then
@@ -86,7 +89,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias clip='xclip -selection c'
     alias cleanUpDocker='docker rmi -f $(docker images | grep "^<none>" | awk "{print $3}")'
     alias winName='xprop'
-    alias dark='xrandr --output DP-2 --brightness 0.6;xrandr --output DP-1 --brightness 0.6; xrandr --output DP-5 --brightness 0.6'
+    alias dark='xrandr --output DP-2 --brightness 0.5;xrandr --output DP-1 --brightness 0.5; xrandr --output DP-5 --brightness 0.5'
     alias average='xrandr --output DP-2 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-5 --brightness 0.8'
     alias bright='xrandr --output DP-2 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-5 --brightness 1.0'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
