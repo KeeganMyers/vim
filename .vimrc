@@ -1,10 +1,8 @@
-runtime! debian.vim
-
 filetype off
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
-set omnifunc=syntaxcomplete#Complete
+"set omnifunc=syntaxcomplete#Complete
 
 call pathogen#helptags()
 call pathogen#infect()
@@ -12,20 +10,27 @@ call pathogen#infect()
 syntax on
 filetype plugin indent on
 
+let g:rust_doc#downloaded_rust_doc_dir='/Users/kmyers/Documents/rust-docs'
 let mapleader=","
-let g:ycm_rust_src_path="/home//Developer/rust-master/src/"
-let g:racer_cmd = "$HOME/.cargo/bin/racer"
-let g:racer_experimental_completer = 1
-let g:racer_insert_paren = 1
+let g:ycm_rust_src_path="/Users/kmyers/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/src/"
+let g:autofmt_autosave = 1
+set hidden
+let g:racer_cmd="/Users/kmyers/.cargo/bin/racer"
+let g:racer_experimental_completer=1
+let g:racer_insert_paren=1
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 set tabstop=2
 "enable mouse support
 set mouse=a
+set spelllang=en
+"set spellfile=$HOME/Dropbox/vim/spell/en.utf-8.add
+"set spell
 set nowrap
 set backspace=indent,eol,start
 set smartindent
 set cindent
+set clipboard=unnamed,unnamedplus
 set expandtab
 set autoindent
 set formatoptions+=t
@@ -57,7 +62,6 @@ set cursorline
 set noerrorbells
 set nobackup
 set shortmess+=I
-set clipboard=unnamed
 set autoread
 let g:autofmt_autosave = 1
 nnoremap <C-e> 2<C-e>
@@ -113,12 +117,6 @@ function! MyFoldText()
 endfunction
 set foldtext=MyFoldText()
 
-if executable('ag')
-  set grepprg=ag\ --nogroup\ --nocolor
-  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-  nnoremap K :grep! "\b<C-R><C-W>\b"<CR>:cw<CR>
-  let g:ctrlp_use_caching = 0
-endif
 
 " Mappings to easily toggle fold levels
 nnoremap z0 :set foldlevel=0<cr>
@@ -247,6 +245,7 @@ nmap <CR> o<Esc>
 
 " Highlighting {{{
 if &t_Co > 2 || has("gui_running")
+   colo elflord
    syntax on                    " switch syntax highlighting on, when the terminal has colors
 au BufNewFile,BufRead *.rs set filetype=rust
 au BufNewFile,BufRead *.less set filetype=css
@@ -340,3 +339,19 @@ vmap Q gp
 nmap Q gqap
 map <silent> ,/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
+" a basic set up for LanguageClient-Neovim
+" " << LSP >> {{{
+ let g:LanguageClient_autoStart = 0
+ nnoremap <leader>lcs :LanguageClientStart<CR>
+ " if you want it to turn on automatically
+  let g:LanguageClient_autoStart = 1
+ let g:LanguageClient_serverCommands={
+       \ 'python': ['pyls'],
+       \ 'rust': ['rustup', 'run', 'nightly', 'rls'],
+       \ 'javascript': ['javascript-typescript-stdio'],
+       \ 'go': ['go-langserver'] }
+            noremap <silent> H :call LanguageClient_textDocument_hover()<CR>
+            noremap <silent> Z :call LanguageClient_textDocument_definition()<CR>
+            noremap <silent> R :call LanguageClient_textDocument_rename()<CR>
+            noremap <silent> S :call LanugageClient_textDocument_documentSymbol()<CR>
+              " }}}
