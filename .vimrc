@@ -2,13 +2,14 @@ filetype off
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
-"set omnifunc=syntaxcomplete#Complete
 
 call pathogen#helptags()
 call pathogen#infect()
 
 syntax on
 filetype plugin indent on
+
+setlocal omnifunc=racer#RacerComplete
 
 let g:rust_doc#downloaded_rust_doc_dir='/Users/kmyers/Documents/rust-docs'
 let mapleader=","
