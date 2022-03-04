@@ -1,186 +1,151 @@
-runtime! debian.vim
+" plug
+call plug#begin()
+Plug 'rust-lang/rust.vim'
+Plug 'scrooloose/nerdtree'
+Plug 'w0rp/ale'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+call plug#end()
 
-filetype off
-if filereadable("/etc/vim/vimrc.local")
-  source /etc/vim/vimrc.local
+" history
+set history=700
+
+" Vim recommended
+if has('autocmd')
+  filetype plugin indent on
 endif
-set omnifunc=syntaxcomplete#Complete
-
-call pathogen#helptags()
-call pathogen#infect()
-
-syntax on
-filetype plugin indent on
-
-let mapleader=","
-let g:ycm_rust_src_path="/home//Developer/rust-master/src/"
-let g:racer_cmd = "$HOME/.cargo/bin/racer"
-let g:racer_experimental_completer = 1
-let g:racer_insert_paren = 1
-nmap <silent> <leader>ev :e $MYVIMRC<CR>
-nmap <silent> <leader>sv :so $MYVIMRC<CR>
-set tabstop=2
-"enable mouse support
-set mouse=a
-set nowrap
-set backspace=indent,eol,start
-set smartindent
-set cindent
-set expandtab
-set autoindent
-set formatoptions+=t
-set textwidth=79
-set tw=79
+if has('syntax') && !exists('g:syntax_on')
+  syntax enable
+endif
+set synmaxcol=9999
+set hidden " Allows you to switch buffers without saving current
+set wildmenu "tab completion
+set wildmode=longest:full,full " First tab brings up options, second tab cycles
+set encoding=utf8
+set clipboard=unnamedplus
+set nobackup
 set noswapfile
-set number
-set copyindent
-set shiftwidth=2
-set softtabstop=2
-set shiftround
-set showmatch
+set noundofile
+
+" Movement
+let mapleader = ","
+set tm=2000
+noremap ,, ,
+
+" treat wrapped lines as different lines
+nnoremap j gj
+nnoremap k gk
+
+" Enable mouse support
+set mouse=a
+
+" Set 7 lines to the cursor - when moving vertically using j/k
+set so=7
+
+" Always show current position
+set ruler
+
+" Remove bell
+set visualbell
+set t_vb=
+
+" Better searching
+set incsearch
 set ignorecase
 set smartcase
+set wrapscan "wraps around end of file
+" Redraw screen and clear highlighting
+nnoremap <Leader>r :nohl<CR><C-L>
+
+" Don't redraw while executing macros (good performance config)
+set lazyredraw
+
+" tabs
+set expandtab
 set smarttab
-set scrolloff=4
-set hlsearch
-set incsearch
-set history=1000
-set undolevels=1000
-set switchbuf=useopen
+
+" nowrap
+set nowrap
+
+" Show matching bracket
+set showmatch
+set matchtime=2
+set shiftwidth=2
+set tabstop=2
+set number
 set wildmenu
 set wildmode=list:full
 set wildignore=*.swp,*.bak,*.pyc,*.class
 set title
 set visualbell
-set showcmd
-set cursorline
 set noerrorbells
 set nobackup
-set shortmess+=I
-set clipboard=unnamed
-set autoread
 let g:autofmt_autosave = 1
-nnoremap <C-e> 2<C-e>
-nnoremap <C-y> 2<C-y>
-au FileType rust nmap gd <Plug>(rust-def)
-au FileType rust nmap gs <Plug>(rust-def-split)
-au FileType rust nmap gx <Plug>(rust-def-vertical)
-au FileType rust nmap <leader>gd <Plug>(rust-doc)
 
-" a basic set up for LanguageClient-Neovim
-" << LSP >> {{{
-let g:LanguageClient_autoStart = 0
-nnoremap <leader>lcs :LanguageClientStart<CR>
-" if you want it to turn on automatically
-" let g:LanguageClient_autoStart = 1
+"fuzy file search
+set path+=**
 
-let g:LanguageClient_serverCommands = {
-    \ 'python': ['pyls'],
-    \ 'rust': ['rustup', 'run', 'nightly', 'rls'],
-    \ 'javascript': ['javascript-typescript-stdio'],
-    \ 'go': ['go-langserver'] }
+" Configure backspace so it acts as it should act
+set backspace=eol,start,indent
+set whichwrap+=<,>,h,l
 
-noremap <silent> H :call LanguageClient_textDocument_hover()<CR>
-noremap <silent> Z :call LanguageClient_textDocument_definition()<CR>
-noremap <silent> R :call LanguageClient_textDocument_rename()<CR>
-noremap <silent> S :call LanugageClient_textDocument_documentSymbol()<CR>
-" }}}
+" Return to last edit position when opening files (You want this!)
+augroup last_edit
+  autocmd!
+  autocmd BufReadPost *
+       \ if line("'\"") > 0 && line("'\"") <= line("$") |
+       \   exe "normal! g`\"" |
+       \ endif
+augroup END
 
-" Folding rules {{{
-set foldenable                  " enable folding
-set foldcolumn=2                " add a fold column
-set foldmethod=syntax           " detect triple-{ style fold markers
-set foldlevelstart=99           " start out with everything unfolded
-let javascript_fold=1         " JavaScript
-let rust_fold=1
-let ruby_fold=1               " Ruby
-set foldopen=block,hor,insert,jump,mark,percent,quickfix,search,tag,undo
-                                " which commands trigger auto-unfold
-function! MyFoldText()
-    let line = getline(v:foldstart)
+" Close nerdtree after a file is selected
+let NERDTreeQuitOnOpen = 1
 
-    let nucolwidth = &fdc + &number * &numberwidth
-    let windowwidth = winwidth(0) - nucolwidth - 3
-    let foldedlinecount = v:foldend - v:foldstart
-
-    " expand tabs into spaces
-    let onetab = strpart('          ', 0, &tabstop)
-    let line = substitute(line, '\t', onetab, 'g')
-
-    let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
-    let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - 4
-    return line . ' …' . repeat(" ",fillcharcount) . foldedlinecount . ' '
+function! IsNERDTreeOpen()
+  return exists("t:NERDTreeBufName") && (bufwinnr(t:NERDTreeBufName) != -1)
 endfunction
-set foldtext=MyFoldText()
 
-if executable('ag')
-  set grepprg=ag\ --nogroup\ --nocolor
-  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-  nnoremap K :grep! "\b<C-R><C-W>\b"<CR>:cw<CR>
+function! ToggleFindNerd()
+  if IsNERDTreeOpen()
+    exec ':NERDTreeToggle'
+  else
+    exec ':NERDTreeFind'
+  endif
+endfunction
+
+" CtrlP using ripgrep
+if executable('rg')
+  set grepprg=rg\ --color=never
+  let g:ctrlp_user_command = 'rg %s --files --color=never --glob ""'
   let g:ctrlp_use_caching = 0
 endif
 
-" Mappings to easily toggle fold levels
-nnoremap z0 :set foldlevel=0<cr>
-nnoremap z1 :set foldlevel=1<cr>
-nnoremap z2 :set foldlevel=2<cr>
-nnoremap z3 :set foldlevel=3<cr>
-nnoremap z4 :set foldlevel=4<cr>
-nnoremap z5 :set foldlevel=5<cr>
-inoremap qf <C-O>za
-nnoremap ;f za
-onoremap ;f <C-C>za
-vnoremap ;f zf
-" }}}
+" If nerd tree is closed, find current file, if open, close it
+nmap <silent> <leader>f <ESC>:call ToggleFindNerd()<CR>
+nmap <silent> <leader>F <ESC>:NERDTreeToggle<CR>
 
-" tab navigation like firefox {{{
-nnoremap th  :tabfirst<CR>
-nnoremap tj  :tabnext<CR>
-nnoremap tk  :tabprev<CR>
-nnoremap tl  :tablast<CR>
-nnoremap tt  :tabedit<Space>
-nnoremap tn  :tabnext<Space>
-nnoremap tm  :tabm<Space>
-nnoremap td  :tabclose<CR>
-" }}}
+set statusline=%f\ %h%w%m%r\ %=%(%l,%c%V\ %=\ %P%)
 
+" Ale syntax checking
+let g:ale_rust_cargo_use_check = 1
+" use Ctrl-k and Ctrl-j to jump up and down between errors
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
-" tmux config {{{
-let g:tmux_navigator_no_mappings = 1
-let g:tmux_navigator_save_on_switch = 0
+" Use K to show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
 
-map <C-h> <C-w>h
-map <C-j> <C-w>j
-map <C-k> <C-w>k
-map <C-l> <C-w>l
-map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
-map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
-
-nnoremap <silent> <C-h> :TmuxNavigateLeft<cr>
-nnoremap <silent> <C-j> :TmuxNavigateDown<cr>
-nnoremap <silent> <C-k> :TmuxNavigateUp<cr>
-nnoremap <silent> <C-l> :TmuxNavigateRight<cr>
-nnoremap <silent> <C-p> :TmuxNavigatePrevious<cr>
-" }}}
-
-" Toggle the foldcolumn {{{
-nnoremap <leader>f :call FoldColumnToggle()<cr>
-
-
-
-let g:last_fold_column_width = 4
-
-function! FoldColumnToggle()
-    if &foldcolumn
-        let g:last_fold_column_width = &foldcolumn
-        setlocal foldcolumn=0
-      syntax on
-    else
-        let &l:foldcolumn = g:last_fold_column_width
-    endif
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
 endfunction
-" }}}
-"
+
+"ale config
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
+let g:ale_echo_msg_format = '%s'
 
 " Tabbing function
 " (Based on http://stackoverflow.com/questions/5927952/whats-implementation-of-vims-default-tabline-function)
@@ -244,99 +209,3 @@ nnoremap + :20winc +<Return>
 " Add line without entering insert
 nmap <S-Enter> O<Esc>
 nmap <CR> o<Esc>
-
-" Highlighting {{{
-if &t_Co > 2 || has("gui_running")
-   syntax on                    " switch syntax highlighting on, when the terminal has colors
-au BufNewFile,BufRead *.rs set filetype=rust
-au BufNewFile,BufRead *.less set filetype=css
-endif
-" }}}
-
-" Allow quick additions to the spelling dict
-nnoremap <leader>g :spellgood <c-r><c-w>
-
-function! DeleteFile(...)
-  if(exists('a:1'))
-    let theFile=a:1
-  elseif ( &ft == 'help' )
-    echohl Error
-    echo "Cannot delete a help buffer!"
-    echohl None
-    return -1
-  else
-    let theFile=expand('%:p')
-  endif
-  let delStatus=delete(theFile)
-  if(delStatus == 0)
-    echo "Deleted " . theFile
-  else
-    echohl WarningMsg
-    echo "Failed to delete " . theFile
-    echohl None
-  endif
-  return delStatus
-endfunction
-
-"delete the current file
-com! Rm call DeleteFile()
-"delete the file and quit the buffer (quits vim if this was the last file)
-com! RM call DeleteFile() <Bar> q!
-
-function! CopyOutput()
-redir @">
- silent execute Last!
-redir END
-endfunction
-
-com! CL call CopyOutput()
-
-" NERDTree settings {{{
-nnoremap <leader>n :NERDTreeFocus<CR>
-nnoremap <leader>m :NERDTreeClose<CR>:NERDTreeFind<CR>
-nnoremap <leader>N :NERDTreeClose<CR>
-map <C-n> :NERDTreeToggle<CR>
-
-let NERDTreeBookmarksFile=expand("$HOME/.vim/NERDTreeBookmarks")
-let NERDTreeShowBookmarks=1
-let NERDTreeShowFiles=1
-let NERDTreeShowHidden=1
-let NERDTreeQuitOnOpen=1
-let NERDTreeHighlightCursorline=1
-let NERDTreeMouseMode=2
-let NERDTreeIgnore=[ '\.pyc$', '\.pyo$', '\.py\$class$', '\.obj$',
-            \ '\.o$', '\.so$', '\.egg$', '^\.git$' ]
-
-" }}}
-"
-command! -range Vis call setpos('.', [0,<line1>,0,0]) |
-                    \ exe "normal V" |
-                    \ call setpos('.', [0,<line2>,0,0])
-
-" Editor layout {{{
-set termencoding=utf-8
-set encoding=utf-8
-set lazyredraw                  " don't update the display while executing macros
-set laststatus=2                " tell VIM to always put a status line in, even
-                                "    if there is only one window
-set cmdheight=2                 " use a status bar that is 2 rows high
-" }}}
-"
-"
-function! RedirResult(msgcmd)
-    redir! > tmp.out
-    silent execute a:msgcmd
-    redir END
-    :let @+=system("tail -n +4 tmp.out")
-    :silent :exe 'norm i' . system("rm tmp.out")
-endfunction
-
-nnoremap <silent> cps :call RedirResult("Eval")<CR>
-set list
-set listchars=tab:>.,trail:.,extends:#,nbsp:.
-set pastetoggle=<F2>
-nnoremap ; :
-vmap Q gp
-nmap Q gqap
-map <silent> ,/ :nohlsearch<CR>
-cmap w!! w !sudo tee % >/dev/null

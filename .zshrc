@@ -1,10 +1,11 @@
 # Set up the prompt
 
+export GPG_TTY=$TTY
 export PATH=usr/bin:$PATH
 #export ZSH_THEME="muse"
 export ZSH_THEME="simple"
 export TERM=xterm-256color
-plugins=(git colored-man-pages docker command-not-found  debian git-extras git-hubflow themes tmux vi-mode)
+plugins=(git gpg-agent colored-man-pages docker command-not-found  debian git-extras git-hubflow themes tmux vi-mode)
 ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 setopt histignorealldups sharehistory
@@ -83,27 +84,33 @@ compinit
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='exa'
+    alias exportEnv='set -o allexport; source .env; set +o allexport'
+    alias devSecrets='kubectl -n vault exec -ti vault-0 -- vault kv get secrets/yat-fyi/yat-api'
+    alias vim='vim.gtk3'
+    alias forwardDB='nohup kubectl port-forward --namespace postgresql-sandbox svc/postgres-svc 5436:5432 &'
     alias mate-terminal='alacritty -e tmux'
-    alias checkBreakPoints='grep -rn --exclude-dir=log --exclude-dir=vendor byebug .'
     alias grep='rg'
     alias clip='xclip -selection c'
     alias cleanUpDocker='docker rmi -f $(docker images | grep "^<none>" | awk "{print $3}")'
     alias winName='xprop'
-    alias dark='xrandr --output DP-2 --brightness 0.5;xrandr --output DP-1 --brightness 0.5; xrandr --output DP-5 --brightness 0.5'
-    alias average='xrandr --output DP-2 --brightness 0.8;xrandr --output DP-1 --brightness 0.8; xrandr --output DP-5 --brightness 0.8'
-    alias bright='xrandr --output DP-2 --brightness 1.0;xrandr --output DP-1 --brightness 1.0; xrandr --output DP-5 --brightness 1.0'
     alias genPass='date +%s | sha256sum | base64 | head -c 12 ; echo'
     alias rust-repl='evcxr'
+    alias postman='nohup snap run postman &'
+    alias discord='nohup snap run discord &'
 fi
 
 alias emacs='emacs -nw --no-desktop'
 
-function stagingRepl() {
-  ssh -o StrictHostKeyChecking=no -i $HOME/.minikube/machines/minikube/id_rsa docker@$(minikube ip) -p 22 -t 'docker exec -it $(docker ps | grep arc-staging | head -n 1 | awk {'\''print $1'\''}) /usr/local/bin/boot repl -c -H localhost -p 9001'
+function prettyJson() {
+     tee >(/usr/bin/grep -v "^{") | /usr/bin/grep "^{" | jq .
 }
 
 function internal_ip() {
   ip route get 8.8.8.8 | awk '{print $NF; exit}'
+}
+
+function repoGrep() {
+  rg -i $1 -g '!{frontend, target,docs,public,src/assets/icons}'
 }
 
 function instanceIP() {
@@ -173,4 +180,4 @@ function git_prompt_info() {
 }
 
 export DOCKER_HOST=unix:///var/run/docker.sock
-export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin" # Add RVM to PATH for scripting
+export PATH="$PATH:/usr/local/go/bin:$HOME/.rvm/bin:$HOME/.cargo/bin:/usr/games" # Add RVM to PATH for scripting
